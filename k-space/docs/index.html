@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>K-Space - Documentation Complète</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #e2e8f0;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            text-align: center;
+            padding: 3rem 0;
+            border-bottom: 2px solid #334155;
+        }
+
+        h1 {
+            font-size: 3rem;
+            color: #60a5fa;
+            margin-bottom: 1rem;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #94a3b8;
+        }
+
+        nav {
+            background: #1e293b;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin: 2rem 0;
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        nav a {
+            color: #60a5fa;
+            text-decoration: none;
+            padding: 0.5rem 1.5rem;
+            background: #334155;
+            border-radius: 0.5rem;
+            transition: all 0.3s;
+        }
+
+        nav a:hover {
+            background: #60a5fa;
+            color: #0f172a;
+            transform: translateY(-2px);
+        }
+
+        .section {
+            background: #1e293b;
+            padding: 2rem;
+            margin: 2rem 0;
+            border-radius: 1rem;
+            border: 1px solid #334155;
+        }
+
+        h2 {
+            color: #60a5fa;
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #334155;
+        }
+
+        h3 {
+            color: #818cf8;
+            font-size: 1.5rem;
+            margin: 1.5rem 0 1rem 0;
+        }
+
+        .bloc {
+            background: #0f172a;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            margin: 1rem 0;
+            border-left: 4px solid;
+        }
+
+        .bloc-1 {
+            border-left-color: #fbbf24;
+        }
+
+        .bloc-2 {
+            border-left-color: #10b981;
+        }
+
+        .bloc-3 {
+            border-left-color: #f43f5e;
+        }
+
+        .entity-box {
+            background: #334155;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin: 0.5rem 0;
+        }
+
+        .entity-name {
+            font-weight: bold;
+            color: #60a5fa;
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .field {
+            padding: 0.3rem 0;
+            color: #cbd5e1;
+            font-family: 'Courier New', monospace;
+        }
+
+        .pk { color: #fbbf24; font-weight: bold; }
+        .fk { color: #60a5fa; font-weight: bold; }
+
+        code {
+            background: #0f172a;
+            padding: 0.2rem 0.5rem;
+            border-radius: 0.3rem;
+            color: #fbbf24;
+            font-family: 'Courier New', monospace;
+        }
+
+        pre {
+            background: #0f172a;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+            border: 1px solid #334155;
+        }
+
+        .relationship {
+            background: #334155;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin: 0.5rem 0;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .arrow {
+            color: #60a5fa;
+            font-size: 1.5rem;
+        }
+
+        .cardinality {
+            background: #0f172a;
+            padding: 0.2rem 0.5rem;
+            border-radius: 0.3rem;
+            color: #818cf8;
+            font-weight: bold;
+        }
+
+        .download-btn {
+            display: inline-block;
+            background: #10b981;
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            margin: 0.5rem;
+            transition: all 0.3s;
+        }
+
+        .download-btn:hover {
+            background: #059669;
+            transform: translateY(-2px);
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            margin-top: 3rem;
+            border-top: 2px solid #334155;
+            color: #64748b;
+        }
+
+        @media print {
+            body {
+                background: white;
+                color: black;
+            }
+            .section {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📺 K-SPACE</h1>
+            <p class="subtitle">Documentation Complète du Projet<br>Modélisation MERISE & Architecture Simplon AI</p>
+        </header>
+
+        <nav>
+            <a href="#mcd">MCD</a>
+            <a href="#mld">MLD</a>
+            <a href="#mpd">MPD</a>
+            <a href="#architecture">Architecture</a>
+            <a href="#downloads">Téléchargements</a>
+        </nav>
+
+        <!-- MCD -->
+        <section id="mcd" class="section">
+            <h2>🔷 MCD - Modèle Conceptuel des Données</h2>
+
+            <h3>Entités Principales</h3>
+
+            <div class="entity-box">
+                <div class="entity-name">USER</div>
+                <div class="field">• id_user</div>
+                <div class="field">• username</div>
+                <div class="field">• email</div>
+                <div class="field">• password_hash</div>
+                <div class="field">• avatar_url</div>
+                <div class="field">• created_at</div>
+            </div>
+
+            <div class="entity-box">
+                <div class="entity-name">DRAMA</div>
+                <div class="field">• id_drama</div>
+                <div class="field">• id_genre <span class="fk">(FK)</span></div>
+                <div class="field">• title</div>
+                <div class="field">• description</div>
+                <div class="field">• release_year</div>
+                <div class="field">• episode_count</div>
+                <div class="field">• poster_url</div>
+                <div class="field">• created_at</div>
+            </div>
+
+            <div class="entity-box">
+                <div class="entity-name">GENRE</div>
+                <div class="field">• id_genre</div>
+                <div class="field">• name</div>
+                <div class="field">• description</div>
+                <div class="field">• created_at</div>
+            </div>
+
+            <h3>Relations Principales</h3>
+
+            <div class="relationship">
+                <span><strong>GENRE</strong></span>
+                <span class="cardinality">1,1</span>
+                <span class="arrow">→</span>
+                <span>belongs to</span>
+                <span class="arrow">→</span>
+                <span class="cardinality">0,n</span>
+                <span><strong>DRAMA</strong></span>
+            </div>
+
+            <div class="relationship">
+                <span><strong>USER</strong></span>
+                <span class="cardinality">0,n</span>
+                <span class="arrow">→</span>
+                <span>watches</span>
+                <span class="arrow">→</span>
+                <span class="cardinality">0,n</span>
+                <span><strong>DRAMA</strong></span>
+            </div>
+
+            <div class="relationship">
+                <span><strong>USER</strong></span>
+                <span class="cardinality">0,n</span>
+                <span class="arrow">→</span>
+                <span>rates</span>
+                <span class="arrow">→</span>
+                <span class="cardinality">0,n</span>
+                <span><strong>DRAMA</strong></span>
+            </div>
+
+            <div class="relationship">
+                <span><strong>USER</strong></span>
+                <span class="cardinality">0,n</span>
+                <span class="arrow">→</span>
+                <span>joins</span>
+                <span class="arrow">→</span>
+                <span class="cardinality">0,n</span>
+                <span><strong>COMMUNITY</strong></span>
+            </div>
+        </section>
+
+        <!-- MLD -->
+        <section id="mld" class="section">
+            <h2>🔶 MLD - Modèle Logique des Données</h2>
+
+            <h3>Tables Principales</h3>
+            <ul style="color: #cbd5e1; margin-left: 2rem;">
+                <li><strong>users</strong> (id_user PK, username, email, password_hash, avatar_url, created_at)</li>
+                <li><strong>genres</strong> (id_genre PK, name, description, created_at)</li>
+                <li><strong>dramas</strong> (id_drama PK, id_genre FK, title, description, release_year, episode_count, poster_url, created_at)</li>
+            </ul>
+
+            <h3>Tables Associatives</h3>
+            <ul style="color: #cbd5e1; margin-left: 2rem;">
+                <li><strong>user_dramas</strong> - Historique de visionnage (N:M entre users et dramas)</li>
+                <li><strong>ratings</strong> - Notes des utilisateurs (N:M entre users et dramas)</li>
+                <li><strong>community_members</strong> - Membres des communautés (N:M entre users et communities)</li>
+            </ul>
+
+            <h3>Relations</h3>
+            <ul style="color: #cbd5e1; margin-left: 2rem;">
+                <li>dramas.id_genre → genres.id_genre (1:N)</li>
+                <li>messages.id_user → users.id_user (N:1)</li>
+                <li>messages.id_community → communities.id_community (N:1)</li>
+                <li>recommendations.id_user → users.id_user (N:1)</li>
+                <li>recommendations.id_drama → dramas.id_drama (N:1)</li>
+            </ul>
+        </section>
+
+        <!-- MPD -->
+        <section id="mpd" class="section">
+            <h2>🔸 MPD - Modèle Physique des Données</h2>
+
+            <h3>Types PostgreSQL Utilisés</h3>
+            <ul style="color: #cbd5e1; margin-left: 2rem;">
+                <li><code>UUID</code> - Identifiants uniques universels</li>
+                <li><code>VARCHAR(n)</code> - Chaînes de caractères limitées</li>
+                <li><code>TEXT</code> - Texte illimité</li>
+                <li><code>INTEGER</code> - Nombres entiers</li>
+                <li><code>TIMESTAMPTZ</code> - Date/heure avec fuseau</li>
+                <li><code>BOOLEAN</code> - Valeurs true/false</li>
+            </ul>
+
+            <h3>Exemple de Table</h3>
+            <pre><code>CREATE TABLE dramas (
+    id_drama UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id_genre UUID NOT NULL REFERENCES genres(id_genre),
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    release_year INTEGER,
+    episode_count INTEGER,
+    poster_url TEXT,
+    created_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE INDEX idx_dramas_genre ON dramas(id_genre);</code></pre>
+
+            <h3>Contraintes de Sécurité</h3>
+            <ul style="color: #cbd5e1; margin-left: 2rem;">
+                <li><strong>PRIMARY KEY</strong> sur tous les id_*</li>
+                <li><strong>FOREIGN KEY</strong> pour l'intégrité référentielle</li>
+                <li><strong>UNIQUE</strong> pour éviter les doublons</li>
+                <li><strong>CHECK</strong> pour valider les valeurs (ex: score entre 1-10)</li>
+                <li><strong>NOT NULL</strong> sur les champs obligatoires</li>
+            </ul>
+        </section>
+
+        <!-- Architecture -->
+        <section id="architecture" class="section">
+            <h2>🏗️ Architecture du Projet (Simplon AI)</h2>
+
+            <div class="bloc bloc-1">
+                <h3 style="color: #fbbf24;">BLOC 1 — DATA</h3>
+                <p><strong>Collection, stockage et mise à disposition des données</strong></p>
+                <ul style="color: #cbd5e1; margin-left: 2rem; margin-top: 1rem;">
+                    <li><strong>Data Pipeline:</strong> Web scraping (MyDramaList, IMDB), APIs externes, fichiers CSV</li>
+                    <li><strong>PostgreSQL:</strong> Base de données hébergée sur Supabase avec RLS</li>
+                    <li><strong>Data API:</strong> FastAPI exposant les endpoints REST pour dramas, ratings, historique</li>
+                    <li><strong>Technologies:</strong> Python, Pandas, BeautifulSoup, PostgreSQL</li>
+                </ul>
+            </div>
+
+            <div class="bloc bloc-2">
+                <h3 style="color: #10b981;">BLOC 2 — AI</h3>
+                <p><strong>Modèles et services d'intelligence artificielle</strong></p>
+                <ul style="color: #cbd5e1; margin-left: 2rem; margin-top: 1rem;">
+                    <li><strong>Algorithme:</strong> Collaborative Filtering pour recommandations personnalisées</li>
+                    <li><strong>Training:</strong> Entraînement sur historique utilisateur et ratings</li>
+                    <li><strong>AI API:</strong> Endpoint POST /recommend retournant top dramas suggérés</li>
+                    <li><strong>Monitoring:</strong> Métriques RMSE, précision, satisfaction utilisateur</li>
+                    <li><strong>Technologies:</strong> Python, Scikit-learn, FastAPI, Joblib</li>
+                </ul>
+            </div>
+
+            <div class="bloc bloc-3">
+                <h3 style="color: #f43f5e;">BLOC 3 — APPLICATION</h3>
+                <p><strong>Application web intégrant les services IA</strong></p>
+                <ul style="color: #cbd5e1; margin-left: 2rem; margin-top: 1rem;">
+                    <li><strong>Frontend:</strong> React + TypeScript + Tailwind CSS</li>
+                    <li><strong>Backend:</strong> FastAPI orchestrant Data API et AI API</li>
+                    <li><strong>Features:</strong> Tracking dramas, notation, recommandations IA, communautés, chat</li>
+                    <li><strong>CI/CD:</strong> GitHub Actions, tests automatisés, déploiement continu</li>
+                    <li><strong>Monitoring:</strong> Sentry (erreurs), DataDog (performance)</li>
+                </ul>
+            </div>
+
+            <h3>Flux de Données</h3>
+            <pre style="color: #94a3b8;">External APIs → Data Pipeline → PostgreSQL → Data API → Backend → Frontend
+                                   ↓
+                        ML Training → AI Model → AI API ↗</pre>
+        </section>
+
+        <!-- Downloads -->
+        <section id="downloads" class="section">
+            <h2>📥 Téléchargements</h2>
+            <p style="margin-bottom: 1rem;">Documentation disponible en Markdown :</p>
+            <div>
+                <a href="MCD.md" class="download-btn" download>📄 MCD.md</a>
+                <a href="MLD.md" class="download-btn" download>📄 MLD.md</a>
+                <a href="MPD.md" class="download-btn" download>📄 MPD.md</a>
+                <a href="architecture.md" class="download-btn" download>📄 architecture.md</a>
+            </div>
+        </section>
+
+        <footer>
+            <p>K-Space Project Documentation</p>
+            <p>Modélisation MERISE & Architecture Simplon Dev IA</p>
+            <p style="margin-top: 1rem; font-size: 0.9rem;">Généré pour le développement de la plateforme sociale K-Drama</p>
+        </footer>
+    </div>
+</body>
+</html>
