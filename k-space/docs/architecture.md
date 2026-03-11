@@ -1,282 +1,482 @@
-# K-Space – Technical Architecture
+# K-SPACE — ARCHITECTURE DU PROJET
 
-## 1. Project Overview
+## Vue d'ensemble
 
-K-Space is a platform designed for **K-Drama fans** that allows users to:
+K-Space est une plateforme sociale pour fans de K-Dramas qui suit le schéma d'architecture **Simplon Dev IA** avec 3 blocs principaux:
 
-- track dramas they have watched
-- rate and review K-Dramas
-- create watchlists
-- join communities around dramas or genres
-- organize watch parties
-- receive **AI-based recommendations**
-- discover users with similar preferences
-
-The project is structured to meet the requirements of the **Simplon AI Developer certification**, which requires:
-
-- Data pipeline development
-- Integration of an AI service
-- Development of a full-stack application
-
-The architecture is organized around three main components:
-
-- Data Pipeline
-- AI Service
-- Web Application
+1. **BLOC 1 — DATA**: Collection, stockage et exposition des données
+2. **BLOC 2 — AI**: Modèles d'intelligence artificielle et recommandations
+3. **BLOC 3 — APPLICATION**: Application web intégrant les services IA
 
 ---
 
-# 2. Global System Architecture
+## BLOC 1 — DATA
+**Réaliser la collecte, le stockage et la mise à disposition des données**
 
-The system follows a **three-tier architecture** separating the frontend, backend services, and database.
+### 1.1 Extraction et Agrégation de Données (C1, C2, C3)
 
-Users
+**Sources de données:**
+- Web Scraping: MyDramaList, IMDB, sites de K-Dramas
+- APIs externes: The Movie Database (TMDB), drama databases
+- Fichiers CSV: historiques utilisateurs, ratings
+- Bases de données existantes
 
-▼
+**Pipeline de traitement:**
+```
+Sources Externes → Scrapers → Data Cleaning → Normalisation → PostgreSQL
+```
 
-Frontend (React)
+**Technologies:**
+- Python (BeautifulSoup, Scrapy pour scraping)
+- Pandas (nettoyage et transformation)
+- Requests (appels API)
 
-▼
+**Localisation dans le projet:**
+```
+data_pipeline/
+├── scrapers/
+│   ├── mydramalist_scraper.py
+│   ├── imdb_scraper.py
+│   └── tmdb_api.py
+├── processors/
+│   ├── clean_data.py
+│   └── normalize.py
+└── loaders/
+    └── db_loader.py
+```
 
-Backend API (FastAPI)
+### 1.2 Base de Données PostgreSQL (C4)
 
-▼
+**Architecture:**
+- Hébergement: Supabase (PostgreSQL managé)
+- 9 tables principales
+- Relations normalisées (3NF)
+- Row Level Security (RLS) pour la sécurité
 
-PostgreSQL Database
+**Tables:**
+- users, dramas, genres
+- user_dramas, ratings, recommendations
+- communities, community_members, messages
 
+**Localisation dans le projet:**
+```
+database/
+├── migrations/
+│   ├── 001_create_users.sql
+│   ├── 002_create_dramas.sql
+│   └── ...
+└── seeds/
+    ├── genres.sql
+    └── sample_dramas.sql
+```
 
-Additional services interact with this architecture:
+### 1.3 API REST Data (C5)
 
-External Data Sources
-(API / Scraping / CSV)
+**Endpoints:**
+- `GET /dramas` - Liste des K-Dramas
+- `GET /dramas/:id` - Détails d'un drama
+- `GET /genres` - Liste des genres
+- `POST /ratings` - Ajouter une note
+- `GET /user/:id/history` - Historique de visionnage
 
-▼
+**Technologies:**
+- FastAPI (Python)
+- SQLAlchemy (ORM)
+- Pydantic (validation)
 
-Data Pipeline (Python ETL)
-
-▼
-
-Database (PostgreSQL)
-
-▼
-
-AI Recommendation Service
-
-▼
-
-Application Backend (FastAPI)
-
-▼
-
-Frontend (React)
+**Localisation dans le projet:**
+```
+backend/api/
+├── data_routes.py
+├── queries.py
+└── models.py
+```
 
 ---
 
-# 3. Architecture Components
+## BLOC 2 — AI
+**Intégrer des modèles et des services d'intelligence artificielle**
 
-## 3.1 Frontend
+### 2.1 Veille Technique et POC (C6, C7, C8)
 
-The frontend is responsible for user interaction and visualization.
+**Recherche:**
+- Étude des algorithmes de recommandation
+- Comparaison: Collaborative Filtering vs Content-Based
+- Exploration: Scikit-learn, Surprise, TensorFlow
 
-Technology:
-- React
+**Proof of Concept:**
+- Prototype avec données de test
+- Validation des métriques (RMSE, Precision@K, Recall@K)
+- A/B testing sur échantillon d'utilisateurs
 
-Responsibilities:
-- User authentication interface
-- Viewing K-Drama information
-- Managing watchlists
-- Rating dramas
-- Community interaction
-- Displaying recommendations
+### 2.2 Développement du Modèle IA
 
-The frontend communicates with the backend via **REST API requests**.
+**Algorithme: Collaborative Filtering**
 
----
+**Entrées:**
+- Matrice user-drama (ratings)
+- Historique de visionnage
+- Métadonnées dramas (genre, année)
 
-# 3.2 Backend API
+**Processus d'entraînement:**
+```python
+# 1. Charger les données
+user_ratings = load_ratings_from_db()
 
-The backend exposes the application logic and data access.
+# 2. Preprocessing
+user_item_matrix = create_matrix(user_ratings)
 
-Technology:
-- Python
+# 3. Split train/test
+X_train, X_test = train_test_split(user_item_matrix)
+
+# 4. Entraîner le modèle
+model = CollaborativeFiltering()
+model.fit(X_train)
+
+# 5. Évaluation
+rmse = model.evaluate(X_test)
+
+# 6. Sauvegarder
+model.save('models/recommendation_v1.pkl')
+```
+
+**Localisation dans le projet:**
+```
+ai_service/
+├── models/
+│   ├── collaborative_filtering.py
+│   └── content_based.py
+├── training/
+│   ├── train_model.py
+│   └── evaluate.py
+└── saved_models/
+    └── recommendation_v1.pkl
+```
+
+### 2.3 API REST IA (C9)
+
+**Endpoint principal:**
+```
+POST /api/recommend
+{
+  "user_id": "uuid",
+  "limit": 10
+}
+
+Response:
+{
+  "recommendations": [
+    {
+      "drama_id": "uuid",
+      "score": 0.95,
+      "reason": "Based on your love for Romance dramas"
+    }
+  ]
+}
+```
+
+**Technologies:**
 - FastAPI
+- Joblib (chargement modèle)
+- NumPy/Pandas
 
-Responsibilities:
+**Localisation dans le projet:**
+```
+ai_service/api/
+├── recommendation_routes.py
+└── inference.py
+```
 
-- User authentication
-- CRUD operations for users, dramas, reviews and communities
-- Communication with the database
-- Communication with the AI service
-- Exposure of REST endpoints
+### 2.4 Monitoring Modèle IA & CI/CD (C11, C12, C13)
 
-Example endpoints:
+**Suivi des performances:**
+- Métriques: Accuracy, RMSE, user satisfaction
+- Logs: prédictions, temps de réponse
+- Alertes: dégradation de performance
 
-/api/dramas
+**Pipeline CI/CD:**
+```
+Code Push → Tests → Retraining → Validation → Deployment
+```
 
-/api/users
-
-/api/reviews
-
-/api/watchlist
-
-/api/recommendations
-
-
----
-
-# 3.3 Database
-
-The application uses a **relational database**.
-
-Technology:
-- PostgreSQL
-
-The database stores:
-
-- users
-- dramas
-- ratings
-- reviews
-- watchlists
-- communities
-- friendships
-- recommendations
-
-The database schema will be designed using the **MERISE methodology**:
-
-- MCD (Conceptual Data Model)
-- MLD (Logical Data Model)
-- MPD (Physical Data Model)
+**Retraining automatique:**
+- Déclenché mensuellement
+- Avec nouvelles données utilisateurs
+- Versioning des modèles
 
 ---
 
-# 3.4 Data Pipeline
+## BLOC 3 — APPLICATION
+**Réaliser une application intégrant un service d'intelligence artificielle**
 
-A data pipeline is responsible for collecting and preparing K-Drama information.
+### 3.1 Analyse du Besoin (C14, C15, C16)
 
-Technology:
-- Python
+**User Stories:**
+1. En tant qu'utilisateur, je veux suivre les dramas que j'ai regardés
+2. En tant qu'utilisateur, je veux noter les dramas (1-10)
+3. En tant qu'utilisateur, je veux recevoir des recommandations personnalisées
+4. En tant qu'utilisateur, je veux rejoindre des communautés
+5. En tant qu'utilisateur, je veux chatter dans les communautés
 
-Sources of data include:
+**Cadre technique:**
+- Frontend: React + TypeScript
+- Backend: FastAPI (Python)
+- Database: PostgreSQL (Supabase)
+- AI Service: Python + Scikit-learn
 
-1. Public APIs (example: TMDB)
-2. Web scraping (example: MyDramaList)
-3. CSV datasets
-4. Internal application database
+**Méthodologie Agile:**
+- Sprints de 2 semaines
+- Daily standups
+- Revues de sprint
 
-Pipeline stages:
+### 3.2 Application Frontend (C17)
 
-Data Extraction
-(API / Scraping / CSV)
+**Technologies:**
+- React 18
+- TypeScript
+- Tailwind CSS
+- React Router (navigation)
+- React Query (data fetching)
 
-▼
+**Pages principales:**
+```
+/login          - Authentification
+/dashboard      - Tableau de bord personnel
+/dramas         - Catalogue de dramas
+/dramas/:id     - Détails d'un drama
+/recommendations - Recommandations IA
+/communities    - Liste des communautés
+/communities/:id - Chat communauté
+/profile        - Profil utilisateur
+```
 
-Data Cleaning
+**Localisation dans le projet:**
+```
+frontend/
+├── src/
+│   ├── components/
+│   │   ├── DramaCard.tsx
+│   │   ├── RatingForm.tsx
+│   │   └── RecommendationFeed.tsx
+│   ├── pages/
+│   │   ├── Dashboard.tsx
+│   │   ├── DramaCatalog.tsx
+│   │   └── Recommendations.tsx
+│   ├── services/
+│   │   ├── api.ts
+│   │   └── auth.ts
+│   └── context/
+│       └── UserContext.tsx
+```
 
-▼
+### 3.3 Application Backend (C17)
 
-Data Aggregation
+**Architecture:**
+```
+Frontend → Backend API → Data API
+                       → AI API
+                       → PostgreSQL
+```
 
-▼
+**Responsabilités:**
+- Authentification utilisateurs
+- Orchestration des appels (Data API + AI API)
+- Business logic
+- Gestion des sessions
 
-Data Storage (PostgreSQL)
+**Endpoints principaux:**
+```
+POST /auth/login
+POST /auth/register
+GET  /dramas
+POST /dramas/:id/rate
+GET  /recommendations/:user_id
+POST /communities/:id/messages
+```
 
-This pipeline ensures that the database always contains updated K-Drama information.
+**Localisation dans le projet:**
+```
+backend/
+├── app/
+│   ├── main.py
+│   ├── auth/
+│   │   └── routes.py
+│   ├── routes/
+│   │   ├── dramas.py
+│   │   ├── ratings.py
+│   │   └── communities.py
+│   └── services/
+│       ├── recommendation_service.py
+│       └── drama_service.py
+```
+
+### 3.4 CI/CD (C18, C19)
+
+**Pipeline GitHub Actions:**
+```yaml
+name: Deploy K-Space
+
+on: push
+
+jobs:
+  test:
+    - Run unit tests
+    - Run integration tests
+
+  build:
+    - Build Frontend
+    - Build Backend Docker image
+
+  deploy:
+    - Deploy to staging
+    - Run E2E tests
+    - Deploy to production
+```
+
+**Tests:**
+- Unit tests: Jest (Frontend), Pytest (Backend)
+- Integration tests: API endpoints
+- E2E tests: Playwright
+
+### 3.5 Monitoring & Incident Management (C20, C21)
+
+**Monitoring Application:**
+- Sentry: Error tracking
+- DataDog: Performance monitoring
+- Logs: CloudWatch / Supabase Logs
+
+**Alertes:**
+- Slack notifications
+- PagerDuty (incidents critiques)
+
+**Métriques suivies:**
+- Temps de réponse API
+- Taux d'erreur
+- Satisfaction utilisateur (NPS)
+- Click-through rate des recommandations
 
 ---
 
-# 3.5 AI Recommendation Service
+## FLUX DE DONNÉES COMPLET
 
-An AI service will provide personalized recommendations.
-
-Technology:
-- Python
-- Scikit-learn
-
-Possible models:
-
-- Collaborative filtering
-- Content-based filtering
-- Similarity models
-
-Inputs:
-
-- user watch history
-- ratings
-- preferred genres
-- community interactions
-
-Outputs:
-
-- recommended dramas
-- suggested friends
-- suggested communities
-
-The AI model will be exposed through a **REST API**.
-
-Example endpoint:
-
-/api/recommendations/{user_id}
-
----
-
-# 4. Data Flow
-
-The global data flow of the system is the following:
-
-External Data Sources
-
-▼
-
-Data Pipeline
-
-▼
-
-PostgreSQL Database
-
-▼
-
-Backend API
-
-▼
-
-AI Recommendation Service
-
-▼
-
-Frontend Interface
-
+```
+┌─────────────────┐
+│  External APIs  │
+│  Web Scraping   │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│  Data Pipeline  │
+│  (Cleaning)     │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│   PostgreSQL    │
+│   (Supabase)    │
+└────────┬────────┘
+         │
+    ┌────┴────┐
+    │         │
+    ▼         ▼
+┌─────┐   ┌─────┐
+│Data │   │ ML  │
+│ API │   │Train│
+└──┬──┘   └──┬──┘
+   │         │
+   │         ▼
+   │    ┌─────────┐
+   │    │ AI API  │
+   │    └────┬────┘
+   │         │
+   └────┬────┘
+        │
+        ▼
+   ┌─────────┐
+   │ Backend │
+   │  API    │
+   └────┬────┘
+        │
+        ▼
+   ┌──────────┐
+   │ Frontend │
+   │  React   │
+   └──────────┘
+        │
+        ▼
+   ┌──────────┐
+   │   User   │
+   └──────────┘
+```
 
 ---
 
-# 5. Security Considerations
+## STRUCTURE DU PROJET
 
-Security measures include:
-
-- authentication system
-- role-based access control
-- secure API endpoints
-- input validation
-- protection against OWASP Top 10 vulnerabilities
+```
+k-space/
+├── ai_service/              # BLOC 2
+│   ├── models/
+│   ├── training/
+│   ├── inference/
+│   └── api/
+│
+├── backend/                 # BLOC 3
+│   ├── app/
+│   │   ├── api/            # BLOC 1
+│   │   ├── auth/
+│   │   ├── routes/
+│   │   └── services/
+│   └── requirements.txt
+│
+├── data_pipeline/           # BLOC 1
+│   ├── scrapers/
+│   ├── processors/
+│   └── loaders/
+│
+├── database/                # BLOC 1
+│   ├── migrations/
+│   └── seeds/
+│
+├── frontend/                # BLOC 3
+│   ├── src/
+│   │   ├── components/
+│   │   ├── pages/
+│   │   ├── services/
+│   │   └── context/
+│   └── package.json
+│
+├── docker/
+│   ├── Dockerfile.api
+│   ├── Dockerfile.ai
+│   └── docker-compose.yml
+│
+├── tests/
+│   ├── unit/
+│   ├── integration/
+│   └── e2e/
+│
+└── docs/
+    ├── MCD.md
+    ├── MLD.md
+    ├── MPD.md
+    └── architecture.md
+```
 
 ---
 
-# 6. Scalability Considerations
+## TECHNOLOGIES RÉSUMÉES
 
-The architecture is designed to support future improvements such as:
-
-- containerization with Docker
-- CI/CD pipelines
-- monitoring tools
-- scalable AI models
-
----
-
-# 7. Future Improvements
-
-Future technical improvements may include:
-
-- deployment on cloud infrastructure
-- advanced recommendation algorithms
-- real-time community interactions
-- enhanced monitoring of AI model performance
+| Composant | Technologie |
+|-----------|-------------|
+| Frontend | React + TypeScript + Tailwind CSS |
+| Backend API | FastAPI (Python) |
+| Data API | FastAPI (Python) |
+| AI Service | Python + Scikit-learn |
+| Database | PostgreSQL (Supabase) |
+| Data Pipeline | Python (BeautifulSoup, Pandas) |
+| Testing | Jest, Pytest, Playwright |
+| CI/CD | GitHub Actions |
+| Monitoring | Sentry, DataDog |
+| Deployment | Docker, Vercel/Railway |
